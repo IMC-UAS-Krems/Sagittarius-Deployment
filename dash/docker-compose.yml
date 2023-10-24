@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  app:
+    image: sagittarius.azurecr.io/dashboard:latest
+    working_dir: /app
+    environment:
+      GEOCODING_KEY: ${GEOCODING_KEY}
+      SECRET_KEY: ${SECRET_KEY}
+      FILE_PATH: ${URL_CONFIG}
+
+    ports:
+      - "8000:8000"

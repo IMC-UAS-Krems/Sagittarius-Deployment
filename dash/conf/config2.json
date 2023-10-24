@@ -1,0 +1,75 @@
+{
+    "service": {
+        "version": {
+            "major": 1,
+            "minor": 0,
+            "patch": 0
+        },
+        "name": "Barcelona",
+        "scope": "Environment"
+    },
+    "data_sources": {
+        "measurements": {
+            "Measurements": {
+                "name": "Measurements",
+                "provider": "Fiware",
+                "type": "SmartMeter",
+                "uri": "https://data.iiss.at/dataskop/fiwarenosec",
+                "query": {
+                    "type": "PointOfInterest",
+                    "select": [
+                        "name",
+                        "location"
+                    ]
+                }
+            }
+        }
+    },
+    "application": {
+        "type": "Web",
+        "layout": "SinglePage",
+        "roles": [
+            "User",
+            "Superuser",
+            "Admin"
+        ],
+        "visualizations": {
+            "Air Quality Visualization": {
+                "name": "Points of Interest",
+                "type": "Map",
+                "source": "Measurements",
+                "data": [
+                    "location",
+                    "name"
+                ],
+                "extra": {
+                    "area": "Barcelona"
+                }
+
+            },
+            "Air Quality Visualization2": {
+                "name": "Points of Interest1",
+                "type": "Map",
+                "source": "Measurements",
+                "data": [
+                    "location",
+                    "name"
+                ],
+                "extra": {
+                    "area": "Barcelona"
+                }
+
+            }
+        }
+    },
+    "deployment": {
+        "env": {
+            "local": {
+                "name": "local",
+                "uri": "http://localhost/test",
+                "port": 50055,
+                "type": "Docker"
+            }
+        }
+    }
+}

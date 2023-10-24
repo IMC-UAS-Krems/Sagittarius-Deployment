@@ -1,0 +1,129 @@
+{
+    "service": {
+        "version": {
+            "major": 1,
+            "minor": 0,
+            "patch": 0
+        },
+        "name": "Air Quality Madrid",
+        "scope": "Environment"
+    },
+    "data_sources": {
+        "measurements": {
+            "Measurements": {
+                "name": "Measurements",
+                "provider": "Fiware",
+                "type": "SmartMeter",
+                "uri": "https://data.iiss.at/dataskop/fiwarenosec/v2/entities",
+                "query": {
+                    "type": "AirQualityObserved",
+                    "select": [
+                        "location",
+                        "NOx",
+                        "NO",
+                        "NO2",
+                        "dateObserved",
+                        "address",
+                        "id"
+                    ]
+                }
+            }
+        }
+    },
+    "application": {
+        "type": "Web",
+        "layout": "SinglePage",
+        "roles": [
+            "User",
+            "Superuser",
+            "Admin"
+        ],
+        "visualizations": {
+            "Air Quality Visualization": {
+                "name": "Air Quality Visualization",
+                "type": "Map",
+                "source": "Measurements",
+                "data": [
+                    "location",
+                    "address",
+                    "NOx",
+                    "NO"
+                ],
+                "extra": {
+                    "area": "Madrid"
+                }
+
+            },
+            "Line Chart": {
+                "name": "Line Chart",
+                "type": "LineChart",
+                "source": "Measurements",
+                "traces": [
+                    {
+                        "x": "dateObserved",
+                        "y": "NOx"
+
+                    },
+                    {
+                        "x": "dateObserved",
+                        "y": "NO2"
+                    }
+                ],
+                "group_by": "address"
+
+            },
+            "Bar Chart": {
+                "name": "Bar Chart",
+                "type": "BarChart",
+                "source": "Measurements",
+                "traces": [
+                        "NOx",
+                        "NO2"
+                ],
+                "group_by": "address"
+
+            },
+            "Pie Chart": {
+                "name": "Pie Chart",
+                "type": "PieChart",
+                "source": "Measurements",
+                "traces": [
+                        "NO",
+                        "NO2",
+                        "NOx",
+                        "NO2"
+                ],
+                "group_by": "address"
+
+            },
+            "Line Chart 2": {
+                "name": "Line Chart 2",
+                "type": "Scatter",
+                "source": "Measurements",
+                "traces": [
+                    {
+                        "x": "dateObserved",
+                        "y": "NOx"
+
+                    },
+                    {
+                        "x": "dateObserved",
+                        "y": "NO2"
+                    }
+                ]
+
+            }
+
+        }
+    },
+    "deployment": {
+        "env": {
+            "local": {
+                "name": "local",
+                "uri": "http://localhost/test",
+                "port": 50055,
+                "type": "Docker"
+            }
+        }
+    }
+}
