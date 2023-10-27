@@ -1,0 +1,1226 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 14,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "never",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "Station Code",
+        "xTickLabelRotation": 30,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 10,
+          "refId": "A"
+        }
+      ],
+      "title": "Bar Chart Stacked",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "lat": true,
+              "lon": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "BEN": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "CH4": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "CO": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "EBE": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NHMC": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NO": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NO2": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NOx": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "O3": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "PM10": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "SO2": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "Station Code": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Station Name": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "TCH": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "TOL": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "q4FfAqGIz"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "Station Code",
+        "xTickLabelRotation": 60,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "cacheDurationSeconds": 300,
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "q4FfAqGIz"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].id",
+              "language": "jsonata",
+              "name": "id"
+            },
+            {
+              "jsonPath": "$[*].stationCode.value",
+              "language": "jsonata",
+              "name": "Station Code"
+            },
+            {
+              "jsonPath": "$[*].($count(NO) > 0 ? NO.value : null)",
+              "language": "jsonata",
+              "name": "NO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NO2) > 0 ? NO2.value : null)",
+              "language": "jsonata",
+              "name": "NO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NOx) > 0 ? NOx.value : null)",
+              "language": "jsonata",
+              "name": "NOx",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(O3) > 0 ? O3.value : null)",
+              "language": "jsonata",
+              "name": "O3",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(BEN) > 0 ? BEN.value : null)",
+              "language": "jsonata",
+              "name": "BEN",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CH4) > 0 ? CH4.value : null)",
+              "language": "jsonata",
+              "name": "CH4",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(EBE) > 0 ? EBE.value : null)",
+              "language": "jsonata",
+              "name": "EBE",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NHMC) > 0 ? NHMC.value : null)",
+              "language": "jsonata",
+              "name": "NHMC",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(PM10) > 0 ? PM10.value : null)",
+              "language": "jsonata",
+              "name": "PM10",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TCH) > 0 ? TCH.value : null)",
+              "language": "jsonata",
+              "name": "TCH",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TOL) > 0 ? TOL.value : null)",
+              "language": "jsonata",
+              "name": "TOL",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CO) > 0 ? CO.value : null)",
+              "language": "jsonata",
+              "name": "CO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(SO2) > 0 ? SO2.value : null)",
+              "language": "jsonata",
+              "name": "SO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].stationName.value",
+              "language": "jsonata",
+              "name": "stationName"
+            },
+            {
+              "jsonPath": "$[*].dateObserved.value",
+              "language": "jsonata",
+              "name": "date",
+              "type": "time"
+            }
+          ],
+          "method": "GET",
+          "params": [
+            [
+              "type",
+              "AirQualityObserved"
+            ],
+            [
+              "limit",
+              "1000"
+            ]
+          ],
+          "queryParams": "",
+          "refId": "A",
+          "urlPath": ""
+        },
+        {
+          "cacheDurationSeconds": 300,
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "q4FfAqGIz"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[-1].{'PM2.5' : $count($$.'PM2.5') != 0 ? \"aa\":\"bb\"}",
+              "language": "jsonata"
+            },
+            {
+              "jsonPath": "$[-1].($count(SO2) > 0 ? SO2.value : null)",
+              "language": "jsonata",
+              "name": "SO2"
+            },
+            {
+              "jsonPath": "$[-1].id",
+              "language": "jsonata",
+              "name": ""
+            },
+            {
+              "jsonPath": "$.[*].stationName.value",
+              "language": "jsonpath",
+              "name": ""
+            }
+          ],
+          "hide": true,
+          "method": "GET",
+          "params": [
+            [
+              "type",
+              "AirQualityObserved"
+            ],
+            [
+              "limit",
+              "1000"
+            ]
+          ],
+          "queryParams": "",
+          "refId": "B",
+          "urlPath": ""
+        }
+      ],
+      "title": "Bar chart",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "id": true,
+              "stationName": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "BEN": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "CH4": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "CO": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "EBE": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NHMC": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NO": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NO2": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NOx": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "O3": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "PM10": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "SO2": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "Station Code": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "TCH": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "TOL": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 12,
+      "options": {
+        "bucketOffset": 0,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 10,
+          "refId": "A"
+        }
+      ],
+      "title": "NO Histogram",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "BEN": true,
+              "CH4": true,
+              "CO": true,
+              "EBE": true,
+              "NHMC": true,
+              "NO2": true,
+              "NOx": true,
+              "O3": true,
+              "PM10": true,
+              "SO2": true,
+              "TCH": true,
+              "TOL": true,
+              "lat": true,
+              "lon": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "histogram"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "9.3.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 2,
+          "refId": "A",
+          "withTransforms": true
+        }
+      ],
+      "title": "Gauge",
+      "transparent": true,
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "q4FfAqGIz"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 10,
+      "options": {
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": true,
+          "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "opacity": 0.4,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "fixed": 5,
+                  "max": 15,
+                  "min": 2
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "text": {
+                  "field": "",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "location": {
+              "latitude": "lat (last)",
+              "longitude": "lon (last)",
+              "mode": "coords"
+            },
+            "name": "Air quality",
+            "tooltip": true,
+            "type": "markers"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "allLayers": true,
+          "id": "fit",
+          "lat": 0,
+          "lon": 0,
+          "padding": 15,
+          "zoom": 15
+        }
+      },
+      "pluginVersion": "9.3.6",
+      "targets": [
+        {
+          "cacheDurationSeconds": 300,
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "q4FfAqGIz"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].stationCode.value",
+              "language": "jsonata",
+              "name": "Station Code"
+            },
+            {
+              "jsonPath": "$[*].stationName.value",
+              "language": "jsonata",
+              "name": "Station Name"
+            },
+            {
+              "jsonPath": "$[*].location.value.coordinates[0] ",
+              "language": "jsonata",
+              "name": "lon"
+            },
+            {
+              "jsonPath": "$[*].location.value.coordinates[1] ",
+              "language": "jsonata",
+              "name": "lat"
+            },
+            {
+              "jsonPath": "$[*].($count(NO) > 0 ? NO.value : null)",
+              "language": "jsonata",
+              "name": "NO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NO2) > 0 ? NO2.value : null)",
+              "language": "jsonata",
+              "name": "NO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NOx) > 0 ? NOx.value : null)",
+              "language": "jsonata",
+              "name": "NOx",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(O3) > 0 ? O3.value : null)",
+              "language": "jsonata",
+              "name": "O3",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(BEN) > 0 ? BEN.value : null)",
+              "language": "jsonata",
+              "name": "BEN",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CH4) > 0 ? CH4.value : null)",
+              "language": "jsonata",
+              "name": "CH4",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(EBE) > 0 ? EBE.value : null)",
+              "language": "jsonata",
+              "name": "EBE",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NHMC) > 0 ? NHMC.value : null)",
+              "language": "jsonata",
+              "name": "NHMC",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(PM10) > 0 ? PM10.value : null)",
+              "language": "jsonata",
+              "name": "PM10",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TCH) > 0 ? TCH.value : null)",
+              "language": "jsonata",
+              "name": "TCH",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TOL) > 0 ? TOL.value : null)",
+              "language": "jsonata",
+              "name": "TOL",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CO) > 0 ? CO.value : null)",
+              "language": "jsonata",
+              "name": "CO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(SO2) > 0 ? SO2.value : null)",
+              "language": "jsonata",
+              "name": "SO2",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "params": [
+            [
+              "type",
+              "AirQualityObserved"
+            ],
+            [
+              "limit",
+              "1000"
+            ]
+          ],
+          "queryParams": "",
+          "refId": "A",
+          "urlPath": ""
+        }
+      ],
+      "title": "GeoMap",
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "BEN": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "CH4": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "CO": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "EBE": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NHMC": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NO": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NO2": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "NOx": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "O3": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "PM10": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "SO2": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "Station Code": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Station Name": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "TCH": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "TOL": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "lat": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "lon": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "geomap"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.3.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 2,
+          "refId": "A",
+          "withTransforms": true
+        }
+      ],
+      "title": "Bar gauge",
+      "transparent": true,
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "displayMode": "auto",
+            "inspect": true,
+            "minWidth": 100
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 8,
+      "options": {
+        "footer": {
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "mean"
+          ],
+          "show": true
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "9.3.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 2,
+          "refId": "A",
+          "withTransforms": true
+        }
+      ],
+      "title": "Table",
+      "transparent": true,
+      "type": "table"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Templates",
+  "uid": "xZASBJMIz",
+  "version": 1,
+  "weekStart": ""
+}
