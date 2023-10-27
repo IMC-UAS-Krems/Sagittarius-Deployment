@@ -1,3 +1,10 @@
+"""
+Usage: main.py (dash | grafana) (create | delete) <filename> <webapp_name>
+
+Options:
+    -h --help   Show help
+"""
+
 import argparse
 import logging
 import os
@@ -100,6 +107,7 @@ def create_web_app(
                     )
                     for k, v in app_settings.items()
                 ],
+                http_logging_enabled=True,
             ),
         ),
     ).result()
