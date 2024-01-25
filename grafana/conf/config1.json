@@ -24,6 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 1,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -99,7 +100,7 @@
           "mode": "single",
           "sort": "none"
         },
-        "xField": "Station Code",
+        "xField": "id",
         "xTickLabelRotation": 30,
         "xTickLabelSpacing": 0
       },
@@ -119,6 +120,7 @@
           "id": "organize",
           "options": {
             "excludeByName": {
+              "Station Code": false,
               "lat": true,
               "lon": true
             },
@@ -197,8 +199,7 @@
                 "operation": "aggregate"
               },
               "Station Code": {
-                "aggregations": [],
-                "operation": "groupby"
+                "aggregations": []
               },
               "Station Name": {
                 "aggregations": [
@@ -217,6 +218,10 @@
                   "last"
                 ],
                 "operation": "aggregate"
+              },
+              "id": {
+                "aggregations": [],
+                "operation": "groupby"
               }
             }
           }
@@ -295,7 +300,7 @@
           "mode": "single",
           "sort": "none"
         },
-        "xField": "Station Code",
+        "xField": "id",
         "xTickLabelRotation": 60,
         "xTickLabelSpacing": 0
       },
@@ -307,11 +312,6 @@
             "uid": "q4FfAqGIz"
           },
           "fields": [
-            {
-              "jsonPath": "$[*].id",
-              "language": "jsonata",
-              "name": "id"
-            },
             {
               "jsonPath": "$[*].stationCode.value",
               "language": "jsonata",
@@ -405,6 +405,11 @@
               "language": "jsonata",
               "name": "date",
               "type": "time"
+            },
+            {
+              "jsonPath": "$[*].id.$replace(/-(?:\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}|latest)$/,\"\")",
+              "language": "jsonata",
+              "name": "id"
             }
           ],
           "method": "GET",
@@ -472,7 +477,8 @@
           "id": "organize",
           "options": {
             "excludeByName": {
-              "id": true,
+              "Station Code": true,
+              "id": false,
               "stationName": true
             },
             "indexByName": {},
@@ -564,6 +570,10 @@
                   "last"
                 ],
                 "operation": "aggregate"
+              },
+              "id": {
+                "aggregations": [],
+                "operation": "groupby"
               }
             }
           }
@@ -943,6 +953,12 @@
               "language": "jsonata",
               "name": "SO2",
               "type": "number"
+            },
+            {
+              "jsonPath": "$[*].id.$replace(/-(?:\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}|latest)/,\"\")\n",
+              "language": "jsonata",
+              "name": "id",
+              "type": "string"
             }
           ],
           "method": "GET",
@@ -1034,8 +1050,7 @@
                 "operation": "aggregate"
               },
               "Station Code": {
-                "aggregations": [],
-                "operation": "groupby"
+                "aggregations": []
               },
               "Station Name": {
                 "aggregations": [
@@ -1055,6 +1070,10 @@
                 ],
                 "operation": "aggregate"
               },
+              "id": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
               "lat": {
                 "aggregations": [
                   "last"
@@ -1069,6 +1088,10 @@
               }
             }
           }
+        },
+        {
+          "id": "sortBy",
+          "options": {}
         }
       ],
       "transparent": true,
@@ -1214,8 +1237,8 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
-    "to": "now"
+    "from": "2023-11-16T21:06:23.371Z",
+    "to": "2023-11-20T21:06:23.371Z"
   },
   "timepicker": {},
   "timezone": "",

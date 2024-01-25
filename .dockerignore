@@ -1,0 +1,7 @@
+.git
+./grafana/provisioning/
+./grafana/plugins/
+./grafana/conf/
+./grafana/setup.sh
+./grafana/Dockerfile
+./dash/conf/

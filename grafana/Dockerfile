@@ -1,4 +1,4 @@
-FROM grafana/grafana-enterprise:9.3.6
+FROM grafana/grafana-enterprise:10.2.2
 
 USER root
 
@@ -9,6 +9,8 @@ USER grafana
 
 COPY ./provisioning/data_source.yaml /etc/grafana/provisioning/datasources/
 COPY ./provisioning/dashboard.yaml /etc/grafana/provisioning/dashboards/
+# RUN echo ${PWD} && ls -lR
+COPY ./plugins/ /var/lib/grafana/plugins/
 COPY ./setup.sh /
 
 ENTRYPOINT ["/setup.sh"]

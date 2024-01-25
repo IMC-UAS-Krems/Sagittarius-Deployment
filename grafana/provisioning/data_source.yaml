@@ -2,6 +2,6 @@ apiVersion: 1
 
 datasources:
   - name: Sagittarius
-    uid: q4FfAqGIz
+    uid: 2RGTUW4Sk
     type: marcusolsson-json-datasource
     url: $DATASOURCE_URL

@@ -1,22 +1,22 @@
-"""
-Usage: main.py (dash | grafana) (create | delete) <filename> <webapp_name>
-
-Options:
-    -h --help   Show help
-"""
-
-import argparse
 import logging
 import os
 from base64 import b64encode
-from string import Template
-from typing import Literal
+from random import choice
 
-from azure.identity import DefaultAzureCredential
+from azure.identity import UsernamePasswordCredential
 from azure.mgmt.web import WebSiteManagementClient
-from azure.mgmt.web.models import NameValuePair, Site, SiteConfig
+from azure.mgmt.web.models import Site, SiteConfig, NameValuePair
 from azure.storage.fileshare import ShareFileClient
-from dotenv import dotenv_values, load_dotenv
+from dotenv import load_dotenv, dotenv_values
+from string import Template
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import requests
+
+from utils import create_logger
 
 load_dotenv()
 
@@ -27,69 +27,84 @@ GROUP_NAME = os.environ["AZURE_GROUP_NAME"]
 APP_PLAN = os.environ["AZURE_APP_PLAN"]
 FILE_SHARE_CONNECTION_STRING = os.environ["AZURE_FILE_SHARE_CONNECTION_STRING"]
 FILE_SHARE_NAME = os.environ["AZURE_FILE_SHARE_NAME"]
+AZURE_PASSWORD = os.environ["AZURE_PASSWORD"]
+AZURE_USERNAME = os.environ["AZURE_USERNAME"]
+AZURE_CLIENT_ID = os.environ["AZURE_CLIENT_ID"]
 
-parser = argparse.ArgumentParser()
-parser.add_argument("target", choices=["dash", "grafana"], help="Target to deploy")
-parser.add_argument("action", choices=["create", "delete"], help="Action to perform")
-parser.add_argument("filename", help="Name of the file to upload or delete")
-parser.add_argument("webapp_name", help="Name of the web app to create or delete")
-
-
-def log(log_string: str):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            print(f"\033[93m{log_string}..\033[0m", end="\r")
-            func(*args, **kwargs)
-            print(f"\033[92m{log_string}...✅\033[0m")
-
-        return wrapper
-
-    return decorator
+logger = create_logger("main")
 
 
-def generate_base64_compose(target: Literal["dash", "grafana"]) -> str:
-    path = f"{target}/docker-compose.yml"
+class UploadFields(BaseModel):
+    user_id: str
+    source: str
+
+
+def generate_base64_compose() -> str:
+    path = "grafana/docker-compose.yml"
     with open(path, "r") as f:
         compose = f.read()
     return b64encode(compose.encode("utf-8")).decode("utf-8")
 
 
-@log("Uploading config file to file share")
-def upload_file_to_share(file_name: str, target: Literal["dash", "grafana"]):
+def upload_file_to_share(data: UploadFields):
     file_share = ShareFileClient.from_connection_string(
         conn_str=FILE_SHARE_CONNECTION_STRING,
         share_name=FILE_SHARE_NAME,
-        file_path=f"{target}_{file_name}",
+        file_path=f"{data.user_id}_config.json",
     )
-    with open(f"{target}/conf/{file_name}", "rb") as f:
-        file_share.upload_file(f)
+    grafana_config = requests.post(
+        "https://sag-grafana-api.azurewebsites.net/",
+        data=data.source,
+        headers={"Content-Type": "application/json"},
+    ).text
+    print(grafana_config)
+
+    file_share.upload_file(grafana_config)
 
 
-@log("Creating web app")
+def find_existing_webapp_by_userid(
+    user_id: str, client: WebSiteManagementClient
+) -> Site | None:
+    for existing_name in client.web_apps.list():
+        if user_id in existing_name.name:
+            return existing_name
+    return None
+
+
 def create_web_app(
-    web_app_name: str,
     compose_b64: str,
-    file_name: str,
-    target: Literal["dash", "grafana"],
-):
-    credential = DefaultAzureCredential()
-
+    user_id: str,
+) -> str:
+    credential = UsernamePasswordCredential(
+        AZURE_CLIENT_ID, AZURE_USERNAME, AZURE_PASSWORD
+    )
     client = WebSiteManagementClient(
         credential, SUBSCRIPTION_ID, api_version="2018-02-01"
     )  # NOTE: api version is important! this is the latest version that is supported and it works
 
     plan = client.app_service_plans.get(GROUP_NAME, APP_PLAN)
 
+    if (existing_webapp := find_existing_webapp_by_userid(user_id, client)) is not None:
+        client.web_apps.restart(GROUP_NAME, existing_webapp.name)
+        logger.info(f"Webapp {existing_webapp.name} already exists. Restarting...")
+
+        return (
+            existing_webapp.host_names[0]
+            if existing_webapp.host_names[0].startswith("http")
+            else f"https://{existing_webapp.host_names[0]}"
+        )
+
     # app_settings aka environment variables
     app_settings = dotenv_values(".env.app")
     app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
-        file_name=f"{target}_{file_name}"
+        file_name=f"{user_id}_config.json"
     )
+    web_app_name = f"sag-{user_id}-grafana"
 
-    client.web_apps.begin_create_or_update(
+    result = client.web_apps.begin_create_or_update(
         GROUP_NAME,
         web_app_name,
-        Site(
+        Site(  # type: ignore
             type="Microsoft.Web/sites",
             kind="app,linux,container",
             location="Germany West Central",
@@ -112,40 +127,55 @@ def create_web_app(
         ),
     ).result()
 
+    logger.info(f"Webapp {result.name} created.")
 
-@log("Deleting file from file share")
-def delete_file(file_name: str, target: Literal["dash", "grafana"]):
-    file_share = ShareFileClient.from_connection_string(
-        conn_str=FILE_SHARE_CONNECTION_STRING,
-        share_name=FILE_SHARE_NAME,
-        file_path=f"{target}_{file_name}",
+    return (
+        result.host_names[0]
+        if result.host_names[0].startswith("http")
+        else f"https://{result.host_names[0]}"
     )
 
-    file_share.delete_file()
 
-
-@log("Deleting web app")
 def delete_web_app(web_app_name: str):
-    credential = DefaultAzureCredential()
+    credential = UsernamePasswordCredential(
+        AZURE_CLIENT_ID, AZURE_USERNAME, AZURE_PASSWORD
+    )
     client = WebSiteManagementClient(
         credential, SUBSCRIPTION_ID, api_version="2018-02-01"
     )  # NOTE: api version is important! this is the latest version that is supported and it works
     client.web_apps.delete(GROUP_NAME, web_app_name, delete_empty_server_farm=False)
 
 
-def main():
-    args = parser.parse_args()
+app = FastAPI()
 
-    if args.action == "delete":
-        delete_web_app(args.webapp_name)
-        delete_file(args.filename, args.target)
-
-        exit(0)
-
-    upload_file_to_share(args.filename, args.target)
-    base64_compose = generate_base64_compose(args.target)
-    create_web_app(args.webapp_name, base64_compose, args.filename, args.target)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-if __name__ == "__main__":
-    main()
+@app.get("/")
+def root() -> RedirectResponse:
+    return RedirectResponse("/status")
+
+
+@app.post("/deploy")
+async def deploy(fields: UploadFields) -> str:
+    try:
+        upload_file_to_share(fields)
+        base64_compose = generate_base64_compose()
+        hostname = create_web_app(base64_compose, fields.user_id)
+
+        return hostname
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/status")
+def status() -> str:
+    statuses = ["Single", "In a relationship", "Married", "In love", "It's complicated"]
+    return choice(statuses)
