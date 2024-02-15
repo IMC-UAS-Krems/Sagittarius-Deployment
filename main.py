@@ -30,6 +30,7 @@ FILE_SHARE_NAME = os.environ["AZURE_FILE_SHARE_NAME"]
 AZURE_PASSWORD = os.environ["AZURE_PASSWORD"]
 AZURE_USERNAME = os.environ["AZURE_USERNAME"]
 AZURE_CLIENT_ID = os.environ["AZURE_CLIENT_ID"]
+GRAFANA_API_URL = os.environ.get("GRAFANA_API_URL") or "http://localhost:9000"
 
 logger = create_logger("main")
 
@@ -53,7 +54,7 @@ def upload_file_to_share(data: UploadFields):
         file_path=f"{data.user_id}_config.json",
     )
     grafana_config = requests.post(
-        "https://sag-grafana-api.azurewebsites.net/",
+        GRAFANA_API_URL,
         data=data.source,
         headers={"Content-Type": "application/json"},
     ).text
