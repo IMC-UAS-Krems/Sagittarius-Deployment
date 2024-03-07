@@ -57,10 +57,15 @@ def upload_file_to_share(data: UploadFields):
         GRAFANA_API_URL,
         data=data.source,
         headers={"Content-Type": "application/json"},
-    ).text
-    print(grafana_config)
+    )
+    if grafana_config.status_code != 200:
+        logger.error(f"Grafana API returned {grafana_config.status_code}")
+        logger.error(grafana_config.text)
+        raise HTTPException(
+            status_code=500, detail=f"Grafana API returned {grafana_config.status_code}"
+        )
 
-    file_share.upload_file(grafana_config)
+    file_share.upload_file(grafana_config.text)
 
 
 def find_existing_webapp_by_userid(
