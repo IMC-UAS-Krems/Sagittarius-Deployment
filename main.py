@@ -101,7 +101,11 @@ def create_web_app(
         )
 
     # app_settings aka environment variables
-    app_settings = {k: v for k, v in dotenv_values().items() if k.startswith("APP_")}
+    app_settings = {
+        k.removeprefix("APP_"): v
+        for k, v in dotenv_values().items()
+        if k.startswith("APP_")
+    }
     app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
         file_name=f"{user_id}_config.json"
     )
