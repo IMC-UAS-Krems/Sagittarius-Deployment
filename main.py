@@ -7,7 +7,7 @@ from azure.identity import UsernamePasswordCredential
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.web.models import Site, SiteConfig, NameValuePair
 from azure.storage.fileshare import ShareFileClient
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 from string import Template
 
 from fastapi import FastAPI, HTTPException
@@ -102,9 +102,7 @@ def create_web_app(
 
     # app_settings aka environment variables
     app_settings = {
-        k.removeprefix("APP_"): v
-        for k, v in dotenv_values().items()
-        if k.startswith("APP_")
+        k.removeprefix("APP_"): v for k, v in os.environ.items() if k.startswith("APP_")
     }
     app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
         file_name=f"{user_id}_config.json"
