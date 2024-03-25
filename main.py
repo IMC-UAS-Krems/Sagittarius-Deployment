@@ -33,7 +33,9 @@ AZURE_CLIENT_ID = os.environ["AZURE_CLIENT_ID"]
 GRAFANA_API_URL = os.environ.get("GRAFANA_API_URL") or "http://localhost:9000"
 
 logger = create_logger("main")
-logger.setLevel(logging.INFO if os.environ.get("DEBUG") != "True" else logging.DEBUG)
+logger.setLevel(
+    logging.INFO if os.environ.get("DEBUG") not in ("True", "true") else logging.DEBUG
+)
 
 
 class UploadFields(BaseModel):
