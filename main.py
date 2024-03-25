@@ -33,6 +33,7 @@ AZURE_CLIENT_ID = os.environ["AZURE_CLIENT_ID"]
 GRAFANA_API_URL = os.environ.get("GRAFANA_API_URL") or "http://localhost:9000"
 
 logger = create_logger("main")
+logger.setLevel(logging.INFO if os.environ.get("DEBUG") != "True" else logging.DEBUG)
 
 
 class UploadFields(BaseModel):
@@ -104,6 +105,8 @@ def create_web_app(
     app_settings = {
         k.removeprefix("APP_"): v for k, v in os.environ.items() if k.startswith("APP_")
     }
+    logger.debug(f"App settings: {app_settings}")
+    logger.debug(f"Environment variables: {os.environ}")
     app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
         file_name=f"{user_id}_config.json"
     )
