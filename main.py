@@ -2,6 +2,7 @@ import logging
 import os
 from base64 import b64encode
 from random import choice
+from typing import Literal
 
 from azure.identity import UsernamePasswordCredential
 from azure.mgmt.web import WebSiteManagementClient
@@ -14,7 +15,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import requests
 
 from utils import create_logger
 
@@ -41,10 +41,11 @@ logger.setLevel(
 class UploadFields(BaseModel):
     user_id: str
     source: str
+    dashboard_type: Literal["grafana", "dash"]
 
 
-def generate_base64_compose() -> str:
-    path = "grafana/docker-compose.yml"
+def generate_base64_compose(dashboard_type: Literal["dash", "grafana"]) -> str:
+    path = f"{dashboard_type}/docker-compose.yml"
     with open(path, "r") as f:
         compose = f.read()
     return b64encode(compose.encode("utf-8")).decode("utf-8")
@@ -54,28 +55,30 @@ def upload_file_to_share(data: UploadFields):
     file_share = ShareFileClient.from_connection_string(
         conn_str=FILE_SHARE_CONNECTION_STRING,
         share_name=FILE_SHARE_NAME,
-        file_path=f"{data.user_id}_config.json",
+        file_path=f"{data.user_id}_{data.dashboard_type}.json",
     )
-    grafana_config = requests.post(
-        GRAFANA_API_URL,
-        data=data.source,
-        headers={"Content-Type": "application/json"},
-    )
-    if grafana_config.status_code != 200:
-        logger.error(f"Grafana API returned {grafana_config.status_code}")
-        logger.error(grafana_config.text)
-        raise HTTPException(
-            status_code=500, detail=f"Grafana API returned {grafana_config.status_code}"
-        )
+    # grafana_config = requests.post(
+    #     GRAFANA_API_URL,
+    #     data=data.source,
+    #     headers={"Content-Type": "application/json"},
+    # )
+    # if grafana_config.status_code != 200:
+    #     logger.error(f"Grafana API returned {grafana_config.status_code}")
+    #     logger.error(grafana_config.text)
+    #     raise HTTPException(
+    #         status_code=500, detail=f"Grafana API returned {grafana_config.status_code}"
+    #     )
 
-    file_share.upload_file(grafana_config.text)
+    file_share.upload_file(data.source)
 
 
 def find_existing_webapp_by_userid(
-    user_id: str, client: WebSiteManagementClient
+    user_id: str,
+    dashboard_type: Literal["dash", "grafana"],
+    client: WebSiteManagementClient,
 ) -> Site | None:
     for existing_name in client.web_apps.list():
-        if user_id in existing_name.name:
+        if user_id in existing_name.name and dashboard_type in existing_name.name:
             return existing_name
     return None
 
@@ -83,6 +86,7 @@ def find_existing_webapp_by_userid(
 def create_web_app(
     compose_b64: str,
     user_id: str,
+    dashboard_type: Literal["grafana", "dash"],
 ) -> str:
     credential = UsernamePasswordCredential(
         AZURE_CLIENT_ID, AZURE_USERNAME, AZURE_PASSWORD
@@ -93,7 +97,11 @@ def create_web_app(
 
     plan = client.app_service_plans.get(GROUP_NAME, APP_PLAN)
 
-    if (existing_webapp := find_existing_webapp_by_userid(user_id, client)) is not None:
+    if (
+        existing_webapp := find_existing_webapp_by_userid(
+            user_id, dashboard_type, client
+        )
+    ) is not None:
         client.web_apps.restart(GROUP_NAME, existing_webapp.name)
         logger.info(f"Webapp {existing_webapp.name} already exists. Restarting...")
 
@@ -107,12 +115,10 @@ def create_web_app(
     app_settings = {
         k.removeprefix("APP_"): v for k, v in os.environ.items() if k.startswith("APP_")
     }
-    logger.debug(f"App settings: {app_settings}")
-    logger.debug(f"Environment variables: {os.environ}")
     app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
-        file_name=f"{user_id}_config.json"
+        file_name=f"{user_id}_{dashboard_type}.json"
     )
-    web_app_name = f"sag-{user_id}-grafana"
+    web_app_name = f"sag-{user_id}-{dashboard_type}"
 
     result = client.web_apps.begin_create_or_update(
         GROUP_NAME,
@@ -179,8 +185,8 @@ def root() -> RedirectResponse:
 async def deploy(fields: UploadFields) -> str:
     try:
         upload_file_to_share(fields)
-        base64_compose = generate_base64_compose()
-        hostname = create_web_app(base64_compose, fields.user_id)
+        base64_compose = generate_base64_compose(fields.dashboard_type)
+        hostname = create_web_app(base64_compose, fields.user_id, fields.dashboard_type)
 
         return hostname
     except Exception as e:
