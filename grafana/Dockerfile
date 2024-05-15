@@ -10,7 +10,7 @@ USER grafana
 COPY ./provisioning/data_source.yaml /etc/grafana/provisioning/datasources/
 COPY ./provisioning/dashboard.yaml /etc/grafana/provisioning/dashboards/
 # RUN echo ${PWD} && ls -lR
-COPY ./plugins/ /var/lib/grafana/plugins/
+COPY ./plugins/**/dist /var/lib/grafana/plugins/**/dist
 COPY ./setup.sh /
 
 ENTRYPOINT ["/setup.sh"]
