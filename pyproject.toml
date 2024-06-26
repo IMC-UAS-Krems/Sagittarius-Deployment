@@ -33,7 +33,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 target-version = ["py311"]
 
-[tool.pyright]
+[tool.basedpyright]
 typeCheckingMode = "basic"
 venvPath = "/home/bobokrut/.cache/pypoetry/virtualenvs"
 venv = "azure-deploy-0ThRpu2p-py3.11"
