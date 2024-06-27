@@ -2,7 +2,9 @@ FROM grafana/grafana-enterprise:10.2.2
 
 USER root
 
-RUN apk add --no-cache wget yq
+RUN apk add --no-cache wget
+RUN wget https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
+
 RUN mkdir -p /grafana_dashboards && chown -R grafana /grafana_dashboards
 
 USER grafana
