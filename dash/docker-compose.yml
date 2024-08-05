@@ -2,7 +2,7 @@ version: "3"
 
 services:
   app:
-    image: sagittarius.azurecr.io/dashboard:latest
+    image: sagittarius.azurecr.io/dash:latest
     working_dir: /app
     environment:
       GEOCODING_KEY: ${GEOCODING_KEY}

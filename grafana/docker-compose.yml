@@ -2,12 +2,11 @@ version: "3"
 
 services:
   app:
-    image: sagittarius.azurecr.io/grafana_dashboard:latest
+    image: sagittarius.azurecr.io/grafana:latest
     # dockerfile: Dockerfile
     build: .
     user: "472"
     environment:
-      DATASOURCE_URL: ${DATASOURCE_URL}
       URL_CONFIG: ${URL_CONFIG}
       GF_INSTALL_PLUGINS: marcusolsson-json-datasource
       GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
