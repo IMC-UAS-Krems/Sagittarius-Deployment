@@ -2,7 +2,7 @@ version: "3"
 
 services:
   app:
-    image: sagittarius.azurecr.io/grafana:latest
+    image: sagittarius.azurecr.io/grafana_dashboard:latest
     # dockerfile: Dockerfile
     build: .
     user: "472"
