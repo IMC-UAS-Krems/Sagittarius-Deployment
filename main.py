@@ -5,8 +5,14 @@ from random import choice
 from typing import Literal
 
 from azure.identity import UsernamePasswordCredential
-from azure.mgmt.web import WebSiteManagementClient
-from azure.mgmt.web.models import Site, SiteConfig, NameValuePair
+
+try:
+    from azure.mgmt.web import WebSiteManagementClient
+    from azure.mgmt.web.models import Site, SiteConfig, NameValuePair
+except ImportError as e:
+    raise ImportError(
+        "Check Dockerfile and azure.mgmt.web.models.py. Some packages were removed for optimization"
+    ) from e
 from azure.storage.fileshare import ShareFileClient
 from dotenv import load_dotenv
 from string import Template
