@@ -31,16 +31,27 @@ def p(arg=None):
     return None
 
 
-def create_logger(name: str) -> _logging.Logger:
+def create_logger(name: str, with_file=False) -> _logging.Logger:
     logger = _logging.getLogger(name)
     logger.setLevel(_logging.INFO)
     stream_handler = _logging.StreamHandler(_sys.stdout)
     stream_handler.setFormatter(
         _ColourizedFormatter(
-            "%(levelprefix)s [%(name)s] %(module)s:%(funcName)s:%(lineno)d - %(message)s"
+            "%(asctime)s %(levelprefix)s [%(name)s] %(module)s:%(funcName)s:%(lineno)d - %(message)s",
+            "%Y-%m-%d %H:%M:%S",
         )
     )
     logger.addHandler(stream_handler)
+    if with_file:
+        file_handler = _logging.FileHandler(f"{name}.log")
+        file_handler.setFormatter(
+            _logging.Formatter(
+                "%(asctime)s %(levelname)s [%(name)s] %(module)s:%(funcName)s:%(lineno)d - %(message)s",
+                "%Y-%m-%d %H:%M:%S",
+            )
+        )
+        logger.addHandler(file_handler)
+
     return logger
 
 

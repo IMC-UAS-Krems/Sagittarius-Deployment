@@ -1,46 +1,35 @@
-[tool.poetry]
+[project]
 name = "azure-deploy"
 version = "0.1.0"
 description = ""
-authors = ["bobokrut <egor-evlampiev@mail.ru>"]
 readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "azure-identity==1.14.1",
+    "azure-mgmt-web==7.1.0",
+    "azure-storage-file-share==12.14.2",
+    "fastapi==0.109.0",
+    "pydantic==2.5.3",
+    "python-dotenv==1.0.0",
+    "requests==2.31.0",
+    "uvicorn==0.27.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-azure-storage-file-share = "^12.14.2"
-azure-mgmt-web = "^7.1.0"
-azure-identity = "^1.14.1"
-python-dotenv = "^1.0.0"
-fastapi = "^0.109.0"
-uvicorn = "^0.27.0"
-requests = "^2.31.0"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.3",
+]
 
-
-[tool.poetry.group.dev.dependencies]
-black = "^23.9.1"
-pytest = "^7.4.2"
-debugpy = "^1.8.0"
-ruff = "^0.0.292"
-
-[tool.poetry.scripts]
-azure_deploy = "azure-deploy.main:main"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-
-[tool.black]
-target-version = ["py311"]
 
 [tool.basedpyright]
 typeCheckingMode = "basic"
-venvPath = "/home/bobokrut/.cache/pypoetry/virtualenvs"
-venv = "azure-deploy-0ThRpu2p-py3.11"
-pythonVersion = "3.11"
-useLibraryCodeForTypes = false
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.12"
+useLibraryCodeForTypes = true
 
 [tool.ruff]
-select = ["E", "F", "T20"]
+select = ["E", "F", "T20", "I001"]
 ignore = ["E402", "E501"]
+fixable = ["E", "F", "I001"]
 
