@@ -75,7 +75,7 @@ def upload_file_to_share(data: UploadFields):
     file_share = ShareFileClient.from_connection_string(
         conn_str=FILE_SHARE_CONNECTION_STRING,
         share_name=FILE_SHARE_NAME,
-        file_path=f"{data.user_id}_{data.dashboard_type}.json",
+        file_path=f"{data.user_id}_{data.dashboard_type.value}.json",
     )
 
     file_share.upload_file(data.source)
@@ -174,7 +174,7 @@ def start_local_container(
     image_name: str = (
         "sagittarius.azurecr.io/grafana_dashboard:latest"
         if dashboard_type == "grafana"
-        else "sagittarius.azurecr.io/dash:latest"
+        else "sagittarius.azurecr.io/dash_dashboard:latest"
     )
 
     app_settings = {
