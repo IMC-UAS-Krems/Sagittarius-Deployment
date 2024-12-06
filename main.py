@@ -232,7 +232,7 @@ def deploy_locally(
     URL = "http://localhost:6000"
 
     running_containers: list[Container] = client.containers.list(
-        filters={"name": web_app_name[: web_app_name.rfind("-")]}
+        filters={"name": web_app_name[: web_app_name.rfind("-")]}, all=True
     )
     if len(running_containers) > 1:
         raise Exception("Found more than one dashboard container")
