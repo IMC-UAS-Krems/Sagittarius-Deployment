@@ -192,7 +192,6 @@ def start_local_container(
     app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
         file_name=f"{user_id}_{dashboard_type.value}.json"
     )
-    app_settings["FILE_PATH"] = app_settings["URL_CONFIG"]
     app_settings["GF_INSTALL_PLUGINS"] = "marcusolsson-json-datasource"
     app_settings["GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS"] = (
         "smartcomm-bulletgraph-panel,smartcomm-calendar-panel,smartcomm-extremevalues-panel,smartcomm-map-panel,smartcomm-multiplelinechart-panel,smartcomm-simpleline-panel,smartcomm-minmaxbarchart-panel"
