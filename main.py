@@ -57,20 +57,11 @@ class DeploymentType(str, Enum):
     DOCKER = "Docker"
 
 
-class Deployment(BaseModel):
-    uri: str
-    port: int
-    type: DeploymentType
-
-
-class Config(BaseModel):
-    deployment: dict[str, dict[str, Deployment]]
-
-
 class UploadFields(BaseModel):
     user_id: str
     source: str
     dashboard_type: DashBoardType
+    deployments: list[DeploymentType]
 
 
 def generate_base64_compose(dashboard_type: DashBoardType) -> str:
@@ -306,16 +297,11 @@ def root() -> RedirectResponse:
 @app.post("/deploy")
 async def deploy(fields: UploadFields) -> str | list[str]:
     hostnames = []
-    try:
-        config = Config.model_validate_json(fields.source)
-    except Exception as e:
-        print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
 
     try:
         upload_file_to_share(fields)
-        for deployment_entry in config.deployment["environments"].values():
-            if deployment_entry.type == DeploymentType.AZURE:
+        for deployment_entry in fields.deployments:
+            if deployment_entry == DeploymentType.AZURE:
                 hostname = deploy_azure(fields.user_id, fields.dashboard_type)
                 logger.info(f"Deployed to Azure for {fields.user_id}: {hostname}")
             else:
