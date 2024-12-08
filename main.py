@@ -1,25 +1,29 @@
 import logging
 import os
 from base64 import b64encode
+from enum import Enum
 from random import choice
-from typing import Literal
+from traceback import print_exc
 
 from azure.identity import UsernamePasswordCredential
+from docker.models.containers import Container
+from docker.models.images import Image
 
 try:
     from azure.mgmt.web import WebSiteManagementClient
-    from azure.mgmt.web.models import Site, SiteConfig, NameValuePair
+    from azure.mgmt.web.models import NameValuePair, Site, SiteConfig
 except ImportError as e:
     raise ImportError(
         "Check Dockerfile and azure.mgmt.web.models.py. Some packages were removed for optimization"
     ) from e
-from azure.storage.fileshare import ShareFileClient
-from dotenv import load_dotenv
 from string import Template
 
+import docker
+from azure.storage.fileshare import ShareFileClient
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
 from utils import create_logger
@@ -43,14 +47,25 @@ logger.setLevel(
 )
 
 
+class DashBoardType(str, Enum):
+    GRAFANA = "grafana"
+    DASH = "dash"
+
+
+class DeploymentType(str, Enum):
+    AZURE = "Azure"
+    DOCKER = "Docker"
+
+
 class UploadFields(BaseModel):
     user_id: str
     source: str
-    dashboard_type: Literal["grafana", "dash"]
+    dashboard_type: DashBoardType
+    deployments: list[DeploymentType]
 
 
-def generate_base64_compose(dashboard_type: Literal["dash", "grafana"]) -> str:
-    path = f"{dashboard_type}/docker-compose.yml"
+def generate_base64_compose(dashboard_type: DashBoardType) -> str:
+    path = f"{dashboard_type.value}/docker-compose.yml"
     with open(path, "r") as f:
         compose = f.read()
     return b64encode(compose.encode("utf-8")).decode("utf-8")
@@ -60,30 +75,19 @@ def upload_file_to_share(data: UploadFields):
     file_share = ShareFileClient.from_connection_string(
         conn_str=FILE_SHARE_CONNECTION_STRING,
         share_name=FILE_SHARE_NAME,
-        file_path=f"{data.user_id}_{data.dashboard_type}.json",
+        file_path=f"{data.user_id}_{data.dashboard_type.value}.json",
     )
-    # grafana_config = requests.post(
-    #     GRAFANA_API_URL,
-    #     data=data.source,
-    #     headers={"Content-Type": "application/json"},
-    # )
-    # if grafana_config.status_code != 200:
-    #     logger.error(f"Grafana API returned {grafana_config.status_code}")
-    #     logger.error(grafana_config.text)
-    #     raise HTTPException(
-    #         status_code=500, detail=f"Grafana API returned {grafana_config.status_code}"
-    #     )
 
     file_share.upload_file(data.source)
 
 
 def find_existing_webapp_by_userid(
     user_id: str,
-    dashboard_type: Literal["dash", "grafana"],
+    dashboard_type: DashBoardType,
     client: WebSiteManagementClient,
 ) -> Site | None:
     for existing_name in client.web_apps.list():
-        if user_id in existing_name.name and dashboard_type in existing_name.name:
+        if user_id in existing_name.name and dashboard_type.value in existing_name.name:
             return existing_name
     return None
 
@@ -91,39 +95,18 @@ def find_existing_webapp_by_userid(
 def create_web_app(
     compose_b64: str,
     user_id: str,
-    dashboard_type: Literal["grafana", "dash"],
+    dashboard_type: DashBoardType,
+    client: WebSiteManagementClient,
+    plan,
 ) -> str:
-    credential = UsernamePasswordCredential(
-        AZURE_CLIENT_ID, AZURE_USERNAME, AZURE_PASSWORD
-    )
-    client = WebSiteManagementClient(
-        credential, SUBSCRIPTION_ID, api_version="2018-02-01"
-    )  # NOTE: api version is important! this is the latest version that is supported and it works
-
-    plan = client.app_service_plans.get(GROUP_NAME, APP_PLAN)
-
-    if (
-        existing_webapp := find_existing_webapp_by_userid(
-            user_id, dashboard_type, client
-        )
-    ) is not None:
-        client.web_apps.restart(GROUP_NAME, existing_webapp.name)
-        logger.info(f"Webapp {existing_webapp.name} already exists. Restarting...")
-
-        return (
-            existing_webapp.host_names[0]
-            if existing_webapp.host_names[0].startswith("http")
-            else f"https://{existing_webapp.host_names[0]}"
-        )
-
     # app_settings aka environment variables
     app_settings = {
         k.removeprefix("APP_"): v for k, v in os.environ.items() if k.startswith("APP_")
     }
     app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
-        file_name=f"{user_id}_{dashboard_type}.json"
+        file_name=f"{user_id}_{dashboard_type.value}.json"
     )
-    web_app_name = f"sag-{user_id}-{dashboard_type}"
+    web_app_name = f"sag-{user_id}-{dashboard_type.value}"
 
     result = client.web_apps.begin_create_or_update(
         GROUP_NAME,
@@ -170,6 +153,131 @@ def delete_web_app(web_app_name: str):
     client.web_apps.delete(GROUP_NAME, web_app_name, delete_empty_server_farm=False)
 
 
+def get_exposed_port(image: Image) -> str | None:
+    config = image.attrs.get("Config")
+    if not config:
+        return
+
+    port = config.get("ExposedPorts")
+    if not port:
+        return
+
+    return list(port.keys())[0]
+
+
+def start_local_container(
+    client: docker.DockerClient,
+    user_id: str,
+    dashboard_type: DashBoardType,
+    web_app_name: str,
+):
+    image_name: str = (
+        "sagittarius.azurecr.io/grafana_dashboard:latest"
+        if dashboard_type == "grafana"
+        else "sagittarius.azurecr.io/dash_dashboard:latest"
+    )
+
+    app_settings = {
+        k.removeprefix("APP_"): v for k, v in os.environ.items() if k.startswith("APP_")
+    }
+    app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
+        file_name=f"{user_id}_{dashboard_type.value}.json"
+    )
+    app_settings["GF_INSTALL_PLUGINS"] = "marcusolsson-json-datasource"
+    app_settings["GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS"] = (
+        "smartcomm-bulletgraph-panel,smartcomm-calendar-panel,smartcomm-extremevalues-panel,smartcomm-map-panel,smartcomm-multiplelinechart-panel,smartcomm-simpleline-panel,smartcomm-minmaxbarchart-panel"
+    )
+    app_settings["GF_FEATURE_TOGGLES_ENABLE"] = "transformationsVariableSupport"
+
+    image = client.images.pull(image_name)
+    port = get_exposed_port(image)
+    if not port:
+        raise ValueError("No port exposed in the image")
+
+    _container = client.containers.run(
+        image,
+        detach=True,
+        environment=app_settings,
+        ports={port: 6000},
+        name=web_app_name,
+        extra_hosts={"localhost": "host-gateway"},
+    )
+
+
+def restart_local_or_remove(
+    client: docker.DockerClient, dashboard_type: DashBoardType, container_name: str
+) -> bool:
+    """Returns `True` if container was restarted else `False`"""
+    if container_name[container_name.rfind("-") + 1 :] == dashboard_type.value:
+        client.containers.get(container_name).restart()
+        return True
+
+    client.containers.get(container_name).remove(force=True)
+    return False
+
+
+def deploy_locally(
+    user_id: str,
+    dashboard_type: DashBoardType,
+):
+    client = docker.from_env()
+    client.login(
+        "sagittarius",
+        password=os.environ["DOCKER_REG_PASSWORD"],
+        registry="sagittarius.azurecr.io",
+    )
+
+    web_app_name = f"sag-{user_id}-{dashboard_type.value}"
+    URL = "http://localhost:6000"
+
+    running_containers: list[Container] = client.containers.list(
+        filters={"name": web_app_name[: web_app_name.rfind("-")]}, all=True
+    )
+    if len(running_containers) > 1:
+        raise Exception("Found more than one dashboard container")
+
+    if len(running_containers) == 1 and restart_local_or_remove(
+        client, dashboard_type, running_containers[0].name
+    ):
+        logger.info(f"Container {web_app_name} already exists. Restarting...")
+        return URL
+
+    start_local_container(client, user_id, dashboard_type, web_app_name)
+
+    logger.info(f"Container {web_app_name} created.")
+
+    return URL
+
+
+def deploy_azure(user_id: str, dashboard_type: DashBoardType) -> str:
+    credential = UsernamePasswordCredential(
+        AZURE_CLIENT_ID, AZURE_USERNAME, AZURE_PASSWORD
+    )
+    client = WebSiteManagementClient(
+        credential, SUBSCRIPTION_ID, api_version="2018-02-01"
+    )  # NOTE: api version is important! this is the latest version that is supported and it works
+
+    if (
+        existing_webapp := find_existing_webapp_by_userid(
+            user_id, dashboard_type, client
+        )
+    ) is not None:
+        client.web_apps.restart(GROUP_NAME, existing_webapp.name)
+        logger.info(f"Webapp {existing_webapp.name} already exists. Restarting...")
+
+        return (
+            existing_webapp.host_names[0]
+            if existing_webapp.host_names[0].startswith("http")
+            else f"https://{existing_webapp.host_names[0]}"
+        )
+
+    plan = client.app_service_plans.get(GROUP_NAME, APP_PLAN)
+    base64_compose = generate_base64_compose(dashboard_type)
+    hostname = create_web_app(base64_compose, user_id, dashboard_type, client, plan)
+
+    return hostname
+
+
 app = FastAPI()
 
 app.add_middleware(
@@ -187,15 +295,26 @@ def root() -> RedirectResponse:
 
 
 @app.post("/deploy")
-async def deploy(fields: UploadFields) -> str:
+async def deploy(fields: UploadFields) -> str | list[str]:
+    hostnames = []
+
     try:
         upload_file_to_share(fields)
-        base64_compose = generate_base64_compose(fields.dashboard_type)
-        hostname = create_web_app(base64_compose, fields.user_id, fields.dashboard_type)
+        for deployment_entry in fields.deployments:
+            if deployment_entry == DeploymentType.AZURE:
+                hostname = deploy_azure(fields.user_id, fields.dashboard_type)
+                logger.info(f"Deployed to Azure for {fields.user_id}: {hostname}")
+            else:
+                hostname = deploy_locally(fields.user_id, fields.dashboard_type)
+                logger.info(f"Deployed locally for {fields.user_id}: {hostname}")
+            hostnames.append(hostname)
 
-        return hostname
+        if len(hostnames) == 1:
+            return hostnames[0]
+        return hostnames
+
     except Exception as e:
-        print(e)
+        print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 

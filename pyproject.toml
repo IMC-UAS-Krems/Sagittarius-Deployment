@@ -8,6 +8,7 @@ dependencies = [
     "azure-identity==1.14.1",
     "azure-mgmt-web==7.1.0",
     "azure-storage-file-share==12.14.2",
+    "docker>=7.1.0",
     "fastapi==0.109.0",
     "pydantic==2.5.3",
     "python-dotenv==1.0.0",

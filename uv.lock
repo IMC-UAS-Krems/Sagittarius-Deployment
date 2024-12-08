@@ -61,6 +61,7 @@ dependencies = [
     { name = "azure-identity" },
     { name = "azure-mgmt-web" },
     { name = "azure-storage-file-share" },
+    { name = "docker" },
     { name = "fastapi" },
     { name = "pydantic" },
     { name = "python-dotenv" },
@@ -78,6 +79,7 @@ requires-dist = [
     { name = "azure-identity", specifier = "==1.14.1" },
     { name = "azure-mgmt-web", specifier = "==7.1.0" },
     { name = "azure-storage-file-share", specifier = "==12.14.2" },
+    { name = "docker", specifier = ">=7.1.0" },
     { name = "fastapi", specifier = "==0.109.0" },
     { name = "pydantic", specifier = "==2.5.3" },
     { name = "python-dotenv", specifier = "==1.0.0" },
@@ -238,6 +240,20 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ae/8e/c2466577a0f29421a74c5e0c7731274c3f82504e0dd08a3ef0489822f0cd/cryptography-41.0.4-cp37-abi3-musllinux_1_1_x86_64.whl", hash = "sha256:9eeb77214afae972a00dee47382d2591abe77bdae166bda672fb1e24702a3860", size = 4463090 },
     { url = "https://files.pythonhosted.org/packages/72/91/b7121bfea5c4111af1794985703dc9783242c387a8a0ec798f64b8ad5bda/cryptography-41.0.4-cp37-abi3-win32.whl", hash = "sha256:3b224890962a2d7b57cf5eeb16ccaafba6083f7b811829f00476309bce2fe0fd", size = 2231130 },
     { url = "https://files.pythonhosted.org/packages/d7/78/29d8332bebfe3c2d49a63fb23e1c9fc73a13507b5206b98479fda04c993b/cryptography-41.0.4-cp37-abi3-win_amd64.whl", hash = "sha256:c880eba5175f4307129784eca96f4e70b88e57aa3f680aeba3bab0e980b0f37d", size = 2663243 },
+]
+
+[[package]]
+name = "docker"
+version = "7.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "requests" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/91/9b/4a2ea29aeba62471211598dac5d96825bb49348fa07e906ea930394a83ce/docker-7.1.0.tar.gz", hash = "sha256:ad8c70e6e3f8926cb8a92619b832b4ea5299e2831c14284663184e200546fa6c", size = 117834 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e3/26/57c6fb270950d476074c087527a558ccb6f4436657314bfb6cdf484114c4/docker-7.1.0-py3-none-any.whl", hash = "sha256:c96b93b7f0a746f9e77d325bcfb87422a3d8bd4f03136ae8a85b37f1898d5fc0", size = 147774 },
 ]
 
 [[package]]
