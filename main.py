@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from utils import create_logger
 
@@ -52,15 +52,24 @@ class DashBoardType(str, Enum):
     DASH = "dash"
 
 
-class DeployTarget(str, Enum):
-    AZURE = "azure"
-    LOCAL = "local"
+class DeploymentType(str, Enum):
+    AZURE = "Azure"
+    DOCKER = "Docker"
+
+
+class Deployment(BaseModel):
+    uri: str
+    port: int
+    type: DeploymentType
+
+
+class Config(BaseModel):
+    deployment: dict[str, dict[str, Deployment]]
 
 
 class UploadFields(BaseModel):
     user_id: str
     source: str
-    deploy_target: DeployTarget = Field(default=DeployTarget.LOCAL)
     dashboard_type: DashBoardType
 
 
@@ -296,15 +305,29 @@ def root() -> RedirectResponse:
 
 
 @app.post("/deploy")
-async def deploy(fields: UploadFields) -> str:
+async def deploy(fields: UploadFields) -> str | list[str]:
+    hostnames = []
+    try:
+        config = Config.model_validate_json(fields.source)
+    except Exception as e:
+        print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
+
     try:
         upload_file_to_share(fields)
-        if fields.deploy_target == DeployTarget.AZURE:
-            hostname = deploy_azure(fields.user_id, fields.dashboard_type)
-        else:
-            hostname = deploy_locally(fields.user_id, fields.dashboard_type)
+        for deployment_entry in config.deployment["environments"].values():
+            if deployment_entry.type == DeploymentType.AZURE:
+                hostname = deploy_azure(fields.user_id, fields.dashboard_type)
+                logger.info(f"Deployed to Azure for {fields.user_id}: {hostname}")
+            else:
+                hostname = deploy_locally(fields.user_id, fields.dashboard_type)
+                logger.info(f"Deployed locally for {fields.user_id}: {hostname}")
+            hostnames.append(hostname)
 
-        return hostname
+        if len(hostnames) == 1:
+            return hostnames[0]
+        return hostnames
+
     except Exception as e:
         print_exc()
         raise HTTPException(status_code=500, detail=str(e))
