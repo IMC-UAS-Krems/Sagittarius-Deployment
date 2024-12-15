@@ -189,7 +189,12 @@ def start_local_container(
     )
     app_settings["GF_FEATURE_TOGGLES_ENABLE"] = "transformationsVariableSupport"
 
+    logger.debug(f"Pulling image {image_name} for {client.info()['Architecture']}")
     image = client.images.pull(image_name)
+    logger.debug(
+        f"Image {image_name}/{image.attrs['Architecture']} pulled ({image.id})"
+    )
+
     port = get_exposed_port(image)
     if not port:
         raise ValueError("No port exposed in the image")
@@ -205,14 +210,25 @@ def start_local_container(
 
 
 def restart_local_or_remove(
-    client: docker.DockerClient, dashboard_type: DashBoardType, container_name: str
+    client: docker.DockerClient, dashboard_type: DashBoardType, container: Container
 ) -> bool:
     """Returns `True` if container was restarted else `False`"""
-    if container_name[container_name.rfind("-") + 1 :] == dashboard_type.value:
-        client.containers.get(container_name).restart()
+
+    if (
+        client.images.get_registry_data(
+            container.image.attrs["RepoDigests"][0].split("@")[0]
+        ).id
+        != container.image.id
+    ):
+        logger.debug(f"Image {container.image.id} is outdated. Removing container...")
+        client.containers.get(container.name).remove(force=True)
+        return False
+
+    if container.name[container.name.rfind("-") + 1 :] == dashboard_type.value:
+        client.containers.get(container.name).restart()
         return True
 
-    client.containers.get(container_name).remove(force=True)
+    client.containers.get(container.name).remove(force=True)
     return False
 
 
@@ -221,6 +237,7 @@ def deploy_locally(
     dashboard_type: DashBoardType,
 ):
     client = docker.from_env()
+    logger.debug(client.version())
     client.login(
         "sagittarius",
         password=os.environ["DOCKER_REG_PASSWORD"],
@@ -237,9 +254,9 @@ def deploy_locally(
         raise Exception("Found more than one dashboard container")
 
     if len(running_containers) == 1 and restart_local_or_remove(
-        client, dashboard_type, running_containers[0].name
+        client, dashboard_type, running_containers[0]
     ):
-        logger.info(f"Container {web_app_name} already exists. Restarting...")
+        logger.debug(f"Container {web_app_name} already exists. Restarting...")
         return URL
 
     start_local_container(client, user_id, dashboard_type, web_app_name)
