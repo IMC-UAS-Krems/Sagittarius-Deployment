@@ -203,7 +203,7 @@ def start_local_container(
         image,
         detach=True,
         environment=app_settings,
-        ports={port: 6000},
+        ports={port: 61234},
         name=web_app_name,
         extra_hosts={"localhost": "host-gateway"},
     )
@@ -245,7 +245,7 @@ def deploy_locally(
     )
 
     web_app_name = f"sag-{user_id}-{dashboard_type.value}"
-    URL = "http://localhost:6000"
+    URL = "http://localhost:61234"
 
     running_containers: list[Container] = client.containers.list(
         filters={"name": web_app_name[: web_app_name.rfind("-")]}, all=True
