@@ -203,7 +203,8 @@ def start_local_container(
         image,
         detach=True,
         environment=app_settings,
-        ports={port: 61234},
+        # ports={port: 61234},
+        ports={port: 7777},
         name=web_app_name,
         extra_hosts={"localhost": "host-gateway"},
     )
@@ -245,7 +246,8 @@ def deploy_locally(
     )
 
     web_app_name = f"sag-{user_id}-{dashboard_type.value}"
-    URL = "http://localhost:61234"
+    # URL = "http://localhost:61234"
+    URL = "http://localhost:7777"
 
     running_containers: list[Container] = client.containers.list(
         filters={"name": web_app_name[: web_app_name.rfind("-")]}, all=True
@@ -317,6 +319,7 @@ async def deploy(fields: UploadFields) -> str | list[str]:
 
     try:
         upload_file_to_share(fields)
+        logger.info(f"Preparing deployment...{fields}")
         for deployment_entry in fields.deployments:
             if deployment_entry == DeploymentType.AZURE:
                 hostname = deploy_azure(fields.user_id, fields.dashboard_type)
