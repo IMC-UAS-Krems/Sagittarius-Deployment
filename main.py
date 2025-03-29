@@ -219,8 +219,10 @@ def restart_local_or_remove(
     client: docker.DockerClient, dashboard_type: DashBoardType, container: Container
 ) -> bool:
     """Returns `True` if container was restarted else `False`"""
+    
+    repo_digests = container.image.attrs.get("RepoDigests", [])
 
-    if (
+    if repo_digests and (
         client.images.get_registry_data(
             container.image.attrs["RepoDigests"][0].split("@")[0]
         ).id
