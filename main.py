@@ -103,9 +103,8 @@ def create_web_app(
     app_settings = {
         k.removeprefix("APP_"): v for k, v in os.environ.items() if k.startswith("APP_")
     }
-    app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
-        file_name=f"{user_id}_{dashboard_type.value}.json"
-    )
+    substituted = app_settings["URL_CONFIG"].replace("$$file_name", f"{user_id}_{dashboard_type.value}.json")
+    app_settings["URL_CONFIG"] = substituted
     web_app_name = f"sag-{user_id}-{dashboard_type.value}"
 
     result = client.web_apps.begin_create_or_update(
