@@ -103,9 +103,8 @@ def create_web_app(
     app_settings = {
         k.removeprefix("APP_"): v for k, v in os.environ.items() if k.startswith("APP_")
     }
-    app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
-        file_name=f"{user_id}_{dashboard_type.value}.json"
-    )
+    substituted = app_settings["URL_CONFIG"].replace("$$file_name", f"{user_id}_{dashboard_type.value}.json")
+    app_settings["URL_CONFIG"] = substituted
     web_app_name = f"sag-{user_id}-{dashboard_type.value}"
 
     result = client.web_apps.begin_create_or_update(
@@ -174,7 +173,7 @@ def start_local_container(
     image_name: str = (
         "sagittarius.azurecr.io/grafana_dashboard:latest"
         if dashboard_type == "grafana"
-        else "sagittarius.azurecr.io/dash_dashboard:latest"
+        else "local/dash_dashboard:latest"
     )
 
     app_settings = {
@@ -183,17 +182,22 @@ def start_local_container(
     app_settings["URL_CONFIG"] = Template(app_settings["URL_CONFIG"]).safe_substitute(
         file_name=f"{user_id}_{dashboard_type.value}.json"
     )
+    app_settings["FILE_PATH"] = app_settings["URL_CONFIG"]
     app_settings["GF_INSTALL_PLUGINS"] = "marcusolsson-json-datasource"
     app_settings["GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS"] = (
         "smartcomm-bulletgraph-panel,smartcomm-calendar-panel,smartcomm-extremevalues-panel,smartcomm-map-panel,smartcomm-multiplelinechart-panel,smartcomm-simpleline-panel,smartcomm-minmaxbarchart-panel"
     )
     app_settings["GF_FEATURE_TOGGLES_ENABLE"] = "transformationsVariableSupport"
 
-    logger.debug(f"Pulling image {image_name} for {client.info()['Architecture']}")
-    image = client.images.pull(image_name)
-    logger.debug(
-        f"Image {image_name}/{image.attrs['Architecture']} pulled ({image.id})"
-    )
+    if "sagittarius.azurecr.io" in image_name:
+        logger.debug(f"Pulling image {image_name} for {client.info()['Architecture']}")
+        image = client.images.pull(image_name)
+        logger.debug(
+            f"Image {image_name}/{image.attrs['Architecture']} pulled ({image.id})"
+        )
+    else:
+        logger.debug(f"Using local image {image_name}")
+        image = client.images.get(image_name)
 
     port = get_exposed_port(image)
     if not port:
@@ -214,8 +218,10 @@ def restart_local_or_remove(
     client: docker.DockerClient, dashboard_type: DashBoardType, container: Container
 ) -> bool:
     """Returns `True` if container was restarted else `False`"""
+    
+    repo_digests = container.image.attrs.get("RepoDigests", [])
 
-    if (
+    if repo_digests and (
         client.images.get_registry_data(
             container.image.attrs["RepoDigests"][0].split("@")[0]
         ).id
